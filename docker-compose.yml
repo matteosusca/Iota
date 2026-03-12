@@ -1,0 +1,80 @@
+services:
+  traefik:
+    image: traefik:v2.10
+    container_name: traefik
+    restart: unless-stopped
+    command:
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:80"
+    ports:
+      - "80:80"
+      - "443:443"
+      - "8080:8080" # Traefik dashboard (development only)
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+    networks:
+      - kaizenfit_network
+
+  database:
+    image: postgres:15-alpine
+    container_name: kaizenfit_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DB: ${POSTGRES_DB:-kaizenfit}
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - kaizenfit_network
+
+  api:
+    image: node:20-alpine # Placeholder for future Dockerfile
+    container_name: kaizenfit_api
+    restart: unless-stopped
+    # command: npm run dev
+    # working_dir: /app
+    volumes:
+      - ./api:/app
+      - /app/node_modules
+    environment:
+      - DATABASE_URL=postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@database:5432/${POSTGRES_DB:-kaizenfit}?schema=public
+      - NODE_ENV=development
+      - PORT=3000
+    depends_on:
+      - database
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.api.rule=Host(`api.localhost`)"
+      - "traefik.http.services.api.loadbalancer.server.port=3000"
+    networks:
+      - kaizenfit_network
+
+  web:
+    image: node:20-alpine # Placeholder for future Dockerfile
+    container_name: kaizenfit_web
+    restart: unless-stopped
+    # command: npm run dev
+    # working_dir: /app
+    volumes:
+      - ./web:/app
+      - /app/node_modules
+    environment:
+      - NODE_ENV=development
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.web.rule=Host(`localhost`)"
+      - "traefik.http.services.web.loadbalancer.server.port=5173"
+    networks:
+      - kaizenfit_network
+
+volumes:
+  pgdata:
+
+networks:
+  kaizenfit_network:
+    driver: bridge

@@ -1,5 +1,5 @@
 # Architectural Guidelines & System Constraints
-**Project:** Zen Fitness Habit App
+**Project:** KaizenFit
 **Target Audience for this document:** AI Coding Agents (Google Antigravity)
 
 ## 1. Core Architectural Principles

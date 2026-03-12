@@ -1,4 +1,4 @@
-# Product Requirements Document (PRD): Zen Fitness Habit App
+# Product Requirements Document (PRD): KaizenFit
 
 ## 1. Vision and Scope
 The application is a personal daily physical challenge tracker, accessible via web browser and installable on mobile devices as a PWA (Progressive Web App). The core philosophy is based on the "Minimum Viable Habit": promoting daily well-being and long-term consistency rather than extreme athletic performance. The main goal is to build a "streak" (consecutive days of training) through a static routine, rewarding total commitment while offering psychological flexibility for harder days.
