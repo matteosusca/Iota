@@ -14,6 +14,7 @@ async function main() {
   // 2. Create Test User
   const testUser = await prisma.user.create({
     data: {
+      id: '927d8b9b-d72b-4227-9fa3-4dd38cc50540',
       email: 'test@kaizenfit.app',
       passwordHash: 'hashed_password_placeholder', // Dummy password
       coins: 100,
@@ -26,6 +27,7 @@ async function main() {
   // 3. Create Exercises
   const pushups = await prisma.exercise.create({
     data: {
+      id: '11111111-1111-1111-1111-111111111111',
       name: 'Push-ups',
       type: 'counter',
     },
@@ -34,6 +36,7 @@ async function main() {
 
   const stretching = await prisma.exercise.create({
     data: {
+      id: '22222222-2222-2222-2222-222222222222',
       name: 'Stretching',
       type: 'timer',
     },
