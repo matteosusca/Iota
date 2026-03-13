@@ -13,8 +13,8 @@ export default defineConfig({
         name: 'KaizenFit',
         short_name: 'KaizenFit',
         description: 'Personal Daily Physical Challenge Tracker',
-        theme_color: '#ffffff',
-        background_color: '#ffffff',
+        theme_color: '#111827',
+        background_color: '#F9FAFB',
         display: 'standalone',
       },
       workbox: {

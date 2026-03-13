@@ -36,8 +36,8 @@ services:
     image: node:20-alpine # Placeholder for future Dockerfile
     container_name: kaizenfit_api
     restart: unless-stopped
-    # command: npm run dev
-    # working_dir: /app
+    command: sh -c "npm install && npx prisma generate && npx prisma db push && npm run dev"
+    working_dir: /app
     volumes:
       - ./api:/app
       - /app/node_modules
@@ -58,10 +58,10 @@ services:
     image: node:20-alpine # Placeholder for future Dockerfile
     container_name: kaizenfit_web
     restart: unless-stopped
-    # command: npm run dev
-    # working_dir: /app
+    command: sh -c "npm install && npm run dev -- --host 0.0.0.0"
+    working_dir: /app
     volumes:
-      - ./web:/app
+      - ./frontend:/app
       - /app/node_modules
     environment:
       - NODE_ENV=development

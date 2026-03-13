@@ -6,8 +6,10 @@ import dailyLogRoutes from './routes/dailyLog.routes';
 import userRoutes from './routes/user.routes';
 import storeRoutes from './routes/store.routes';
 import authRoutes from './routes/auth.routes';
+import notificationsRoutes from './routes/notifications.routes';
 import { authenticateJWT } from './middleware/auth.middleware';
 import { startDailyEvaluationCron } from './cron/dailyEvaluation.cron';
+import { startSmartRemindersCron } from './cron/smartReminders.cron';
 
 dotenv.config();
 
@@ -21,12 +23,14 @@ app.use(express.json());
 // Register API Routes
 app.use('/api/auth', authRoutes);
 
+app.use('/api/notifications', authenticateJWT, notificationsRoutes);
 app.use('/api', authenticateJWT, dailyLogRoutes);
 app.use('/api/user', authenticateJWT, userRoutes);
 app.use('/api/store', authenticateJWT, storeRoutes);
 
 // Start Cron Jobs
 startDailyEvaluationCron();
+startSmartRemindersCron();
 
 app.get('/', (req, res) => {
   res.send('KaizenFit API is running.');

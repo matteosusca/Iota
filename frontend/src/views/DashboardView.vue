@@ -5,6 +5,7 @@ import StatsHeader from '../components/StatsHeader.vue';
 import ConsistencyCalendar from '../components/ConsistencyCalendar.vue';
 import ZenStore from '../components/ZenStore.vue';
 import { useHabitStore } from '../stores/habitStore';
+import { apiClient } from '../api/apiClient';
 
 const store = useHabitStore();
 
@@ -14,6 +15,33 @@ onMounted(() => {
   const monthStr = `${now.getUTCFullYear()}-${String(now.getUTCMonth() + 1).padStart(2, '0')}`;
   store.fetchHistory(monthStr);
 });
+
+const enableNotifications = async () => {
+  if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
+    alert('Push notifications are not supported in this browser.');
+    return;
+  }
+  
+  try {
+    const permission = await Notification.requestPermission();
+    if (permission !== 'granted') {
+      alert('Notification permission denied.');
+      return;
+    }
+
+    const registration = await navigator.serviceWorker.ready;
+    const subscription = await registration.pushManager.subscribe({
+      userVisibleOnly: true,
+      applicationServerKey: import.meta.env.VITE_VAPID_PUBLIC_KEY
+    });
+
+    await apiClient.subscribePush(subscription);
+    alert('Successfully subscribed to notifications!');
+  } catch (error) {
+    console.error('Failed to subscribe:', error);
+    alert('Failed to subscribe. See console for details.');
+  }
+};
 
 // Fallback routine array, since we don't have the explicit API fetches for the routine structure yet.
 // These map to the seeded exercises.
@@ -31,9 +59,14 @@ const exercises = ref([
           <h1 class="text-3xl font-black tracking-tight text-gray-900">Kaizen<span class="text-green-600">Fit</span></h1>
           <p class="text-sm font-medium text-gray-500 mt-1">Groundhog Day Routine</p>
         </div>
-        <button @click="store.logout()" class="text-sm font-medium text-gray-500 hover:text-gray-900 transition-colors">
-          Logout
-        </button>
+        <div class="flex items-center space-x-4">
+          <button @click="enableNotifications" class="text-sm font-medium text-gray-500 hover:text-green-600 transition-colors">
+            Enable Notifications
+          </button>
+          <button @click="store.logout()" class="text-sm font-medium text-gray-500 hover:text-gray-900 transition-colors">
+            Logout
+          </button>
+        </div>
       </div>
     </header>
 
