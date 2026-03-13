@@ -3,6 +3,7 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import { PrismaClient } from '@prisma/client';
 import dailyLogRoutes from './routes/dailyLog.routes';
+import userRoutes from './routes/user.routes';
 import { startDailyEvaluationCron } from './cron/dailyEvaluation.cron';
 
 dotenv.config();
@@ -16,6 +17,7 @@ app.use(express.json());
 
 // Register API Routes
 app.use('/api', dailyLogRoutes);
+app.use('/api/user', userRoutes);
 
 // Start Cron Jobs
 startDailyEvaluationCron();

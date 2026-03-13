@@ -55,4 +55,58 @@ export class DailyLogService {
 
     return savedLog;
   }
+
+  /**
+   * Fetches the completion history for a given month.
+   */
+  static async getHistory(userId: string, targetMonth: string) {
+    const [year, month] = targetMonth.split('-');
+    const startDate = new Date(Date.UTC(Number(year), Number(month) - 1, 1));
+    const endDate = new Date(Date.UTC(Number(year), Number(month), 0, 23, 59, 59, 999));
+
+    const routine = await prisma.routineExercise.findMany({ where: { userId } });
+    const logs = await prisma.dailyLog.findMany({
+      where: {
+        userId,
+        date: { gte: startDate, lte: endDate },
+      },
+      orderBy: { date: 'asc' }
+    });
+
+    const history = [];
+    const daysInMonth = endDate.getUTCDate();
+    
+    // Group logs by day
+    for (let d = 1; d <= daysInMonth; d++) {
+      const dateStr = `${year}-${month}-${String(d).padStart(2, '0')}`;
+      
+      const dayLogs = logs.filter(l => 
+        l.date.getUTCFullYear() === Number(year) &&
+        l.date.getUTCMonth() === Number(month) - 1 &&
+        l.date.getUTCDate() === d
+      );
+
+      // Using simplified evaluation logic
+      if (dayLogs.length === 0) {
+        history.push({ date: dateStr, status: 'Failed' });
+        continue;
+      }
+
+      // We only count unique exercises completed a day just in case there are multiple logs for the same exercise
+      const uniqueCompletedCount = new Set(dayLogs.map(l => l.exerciseId)).size;
+      const completionRatio = routine.length > 0 ? uniqueCompletedCount / routine.length : 0;
+      
+      let dayResult = 'Failed';
+      if (completionRatio >= 1) {
+        dayResult = 'Perfect';
+      } else if (completionRatio >= 0.3) {
+        dayResult = 'Saved';
+      }
+
+      // Note: "Frozen" would be checked by looking at streak Freezes history, but for MVP we simplify.
+      history.push({ date: dateStr, status: dayResult });
+    }
+
+    return history;
+  }
 }

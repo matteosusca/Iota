@@ -1,6 +1,18 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
 import ExerciseCard from './components/ExerciseCard.vue';
+import StatsHeader from './components/StatsHeader.vue';
+import ConsistencyCalendar from './components/ConsistencyCalendar.vue';
+import { useHabitStore } from './stores/habitStore';
+
+const store = useHabitStore();
+
+onMounted(() => {
+  store.fetchUserStats();
+  const now = new Date();
+  const monthStr = `${now.getUTCFullYear()}-${String(now.getUTCMonth() + 1).padStart(2, '0')}`;
+  store.fetchHistory(monthStr);
+});
 
 // Fallback routine array, since we don't have the explicit API fetches for the routine structure yet.
 // These map to the seeded exercises.
@@ -18,13 +30,15 @@ const exercises = ref([
           <h1 class="text-3xl font-black tracking-tight text-gray-900">Kaizen<span class="text-green-600">Fit</span></h1>
           <p class="text-sm font-medium text-gray-500 mt-1">Groundhog Day Routine</p>
         </div>
-        <div class="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center shadow-inner">
-           <span class="text-xl font-bold text-green-600">🔥</span>
-        </div>
       </div>
     </header>
 
-    <main class="p-6 max-w-md mx-auto pt-8 pb-24">
+    <main class="p-6 max-w-md mx-auto pt-4 pb-24">
+      <!-- Dashboard Stats -->
+      <StatsHeader />
+      <ConsistencyCalendar />
+
+      <h2 class="text-xl font-bold mb-4 mt-8">Today's Routine</h2>
       <div v-if="exercises.length > 0">
         <ExerciseCard 
           v-for="exercise in exercises" 

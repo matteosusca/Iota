@@ -15,5 +15,15 @@ export const apiClient = {
       throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
     }
     return response.json();
+  },
+  
+  async get(url: string) {
+    const response = await fetch(`${API_BASE_URL}${url}`);
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
+    }
+    return response.json();
   }
 };

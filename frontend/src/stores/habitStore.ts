@@ -1,4 +1,5 @@
 import { defineStore } from 'pinia';
+import { ref } from 'vue';
 import { apiClient } from '../api/apiClient';
 
 export const useHabitStore = defineStore('habit', () => {
@@ -25,8 +26,46 @@ export const useHabitStore = defineStore('habit', () => {
     }
   };
 
+  const userStats = ref({
+    coins: 0,
+    currentStreak: 0,
+    streakFreezes: 0,
+  });
+
+  const history = ref<{ date: string; status: string }[]>([]);
+
+  const fetchUserStats = async () => {
+    try {
+      const response = await apiClient.get('/user/me');
+      if (response && response.user) {
+        userStats.value = {
+          coins: response.user.coins,
+          currentStreak: response.user.currentStreak,
+          streakFreezes: response.user.streakFreezes,
+        };
+      }
+    } catch (error) {
+      console.error('Failed to fetch user stats:', error);
+    }
+  };
+
+  const fetchHistory = async (month: string) => {
+    try {
+      const response = await apiClient.get(`/logs/history?month=${month}`);
+      if (response && response.history) {
+        history.value = response.history;
+      }
+    } catch (error) {
+      console.error('Failed to fetch history:', error);
+    }
+  };
+
   return {
     userId,
-    saveDailyLog
+    userStats,
+    history,
+    saveDailyLog,
+    fetchUserStats,
+    fetchHistory,
   };
 });
