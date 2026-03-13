@@ -3,12 +3,9 @@ import { ref } from 'vue';
 import { apiClient } from '../api/apiClient';
 
 export const useHabitStore = defineStore('habit', () => {
-  const userId = '927d8b9b-d72b-4227-9fa3-4dd38cc50540'; // Hardcoded test user id
-  
   const saveDailyLog = async (exerciseId: string, _type: string, metrics: any) => {
     try {
       const payload = {
-        userId,
         exerciseId,
         date: new Date().toISOString(),
         metrics
@@ -60,12 +57,50 @@ export const useHabitStore = defineStore('habit', () => {
     }
   };
 
+  const login = async (email: string, password: string) => {
+    const response = await apiClient.post('/auth/login', { email, password });
+    if (response.token) {
+      localStorage.setItem('token', response.token);
+    }
+  };
+
+  const register = async (email: string, password: string) => {
+    const response = await apiClient.post('/auth/register', { email, password });
+    if (response.token) {
+      localStorage.setItem('token', response.token);
+    }
+  };
+
+  const logout = () => {
+    localStorage.removeItem('token');
+    userStats.value = { coins: 0, currentStreak: 0, streakFreezes: 0 };
+    history.value = [];
+    window.location.href = '/login';
+  };
+
+  const buyFreeze = async () => {
+    try {
+      const response = await apiClient.post('/store/buy-freeze', {});
+      if (response && response.user) {
+        userStats.value.coins = response.user.coins;
+        userStats.value.streakFreezes = response.user.streakFreezes;
+        return true;
+      }
+      return false;
+    } catch (error) {
+      console.error('Failed to buy freeze:', error);
+      alert('Could not purchase Streak Freeze. Check your coin balance.');
+      return false;
+    }
+  };
+
   return {
-    userId,
-    userStats,
-    history,
     saveDailyLog,
     fetchUserStats,
     fetchHistory,
+    buyFreeze,
+    login,
+    register,
+    logout,
   };
 });

@@ -68,6 +68,7 @@ export class StreakService {
       
       let newCoins = user.coins;
       let newStreak = user.currentStreak;
+      let newFreezes = user.streakFreezes;
       let dayResult = 'Failed';
 
       if (completionRatio === 1) {
@@ -81,21 +82,47 @@ export class StreakService {
         // newCoins unchanged
         newStreak += 1;
       } else {
-        // Failed Day
-        dayResult = 'Failed';
-        // Reset streak, ignore freezes for now
-        newStreak = 0; 
+        // Failed Day - Check for Freezes!
+        if (newFreezes > 0) {
+          dayResult = 'Frozen';
+          newFreezes -= 1;
+          // Streak is maintained (not incremented, not reset)
+        } else {
+          dayResult = 'Failed';
+          // Reset streak
+          newStreak = 0; 
+        }
       }
 
       console.log(`User ${userId} - Ratio: ${completionRatio.toFixed(2)} - Result: ${dayResult}`);
 
-      // 6. Update User
+      // 6. Update User profile
       await prisma.user.update({
         where: { id: userId },
         data: {
           coins: newCoins,
           currentStreak: newStreak,
+          streakFreezes: newFreezes,
         },
+      });
+
+      // 7. Upsert DailySummary for permanent record
+      const summaryDate = new Date(Date.UTC(yesterdayStart.getUTCFullYear(), yesterdayStart.getUTCMonth(), yesterdayStart.getUTCDate()));
+      await prisma.dailySummary.upsert({
+        where: {
+          userId_date: {
+            userId: userId,
+            date: summaryDate,
+          }
+        },
+        update: {
+          status: dayResult,
+        },
+        create: {
+          userId: userId,
+          date: summaryDate,
+          status: dayResult,
+        }
       });
 
       return {

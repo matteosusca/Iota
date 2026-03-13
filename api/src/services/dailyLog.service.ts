@@ -57,15 +57,15 @@ export class DailyLogService {
   }
 
   /**
-   * Fetches the completion history for a given month.
+   * Fetches the completion history for a given month by reading DailySummaries.
    */
   static async getHistory(userId: string, targetMonth: string) {
     const [year, month] = targetMonth.split('-');
     const startDate = new Date(Date.UTC(Number(year), Number(month) - 1, 1));
     const endDate = new Date(Date.UTC(Number(year), Number(month), 0, 23, 59, 59, 999));
 
-    const routine = await prisma.routineExercise.findMany({ where: { userId } });
-    const logs = await prisma.dailyLog.findMany({
+    // Fetch summaries instead of calculating from logs natively
+    const summaries = await prisma.dailySummary.findMany({
       where: {
         userId,
         date: { gte: startDate, lte: endDate },
@@ -76,35 +76,21 @@ export class DailyLogService {
     const history = [];
     const daysInMonth = endDate.getUTCDate();
     
-    // Group logs by day
+    // Unroll existing summaries into daily slots
     for (let d = 1; d <= daysInMonth; d++) {
       const dateStr = `${year}-${month}-${String(d).padStart(2, '0')}`;
       
-      const dayLogs = logs.filter(l => 
-        l.date.getUTCFullYear() === Number(year) &&
-        l.date.getUTCMonth() === Number(month) - 1 &&
-        l.date.getUTCDate() === d
+      const summary = summaries.find(s => 
+        s.date.getUTCFullYear() === Number(year) &&
+        s.date.getUTCMonth() === Number(month) - 1 &&
+        s.date.getUTCDate() === d
       );
 
-      // Using simplified evaluation logic
-      if (dayLogs.length === 0) {
-        history.push({ date: dateStr, status: 'Failed' });
-        continue;
-      }
-
-      // We only count unique exercises completed a day just in case there are multiple logs for the same exercise
-      const uniqueCompletedCount = new Set(dayLogs.map(l => l.exerciseId)).size;
-      const completionRatio = routine.length > 0 ? uniqueCompletedCount / routine.length : 0;
-      
-      let dayResult = 'Failed';
-      if (completionRatio >= 1) {
-        dayResult = 'Perfect';
-      } else if (completionRatio >= 0.3) {
-        dayResult = 'Saved';
-      }
-
-      // Note: "Frozen" would be checked by looking at streak Freezes history, but for MVP we simplify.
-      history.push({ date: dateStr, status: dayResult });
+      // If no summary exists, it defaults to failed mechanically in the UI until cron runs
+      history.push({ 
+        date: dateStr, 
+        status: summary ? summary.status : 'None' 
+      });
     }
 
     return history;

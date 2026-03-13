@@ -10,8 +10,7 @@ export class UserController {
    */
   static async getMe(req: Request, res: Response) {
     try {
-      // Using the seeded test user UUID for now as specified
-      const userId = '927d8b9b-d72b-4227-9fa3-4dd38cc50540';
+      const userId = (req as any).userId;
 
       const user = await prisma.user.findUnique({
         where: { id: userId },

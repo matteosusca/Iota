@@ -5,12 +5,13 @@ export class DailyLogController {
   
   static async createLog(req: Request, res: Response) {
     try {
-      const { userId, exerciseId, date, metrics } = req.body;
+      const { exerciseId, date, metrics } = req.body;
+      const userId = (req as any).userId;
 
       // Basic I/O validation (Controller responsibility)
       if (!userId || !exerciseId || !date || !metrics) {
         return res.status(400).json({ 
-          error: 'Missing required fields: userId, exerciseId, date, metrics' 
+          error: 'Missing required fields: exerciseId, date, metrics' 
         });
       }
 
@@ -33,8 +34,7 @@ export class DailyLogController {
   static async getHistory(req: Request, res: Response) {
     try {
       const { month } = req.query; // YYYY-MM
-      // Use seeded user for now as specified
-      const userId = '927d8b9b-d72b-4227-9fa3-4dd38cc50540';
+      const userId = (req as any).userId;
 
       if (!month || typeof month !== 'string' || !/^\d{4}-\d{2}$/.test(month)) {
         return res.status(400).json({ error: 'Valid month query parameter is required (YYYY-MM)' });
