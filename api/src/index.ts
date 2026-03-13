@@ -3,6 +3,7 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import { PrismaClient } from '@prisma/client';
 import dailyLogRoutes from './routes/dailyLog.routes';
+import { startDailyEvaluationCron } from './cron/dailyEvaluation.cron';
 
 dotenv.config();
 
@@ -15,6 +16,9 @@ app.use(express.json());
 
 // Register API Routes
 app.use('/api', dailyLogRoutes);
+
+// Start Cron Jobs
+startDailyEvaluationCron();
 
 app.get('/', (req, res) => {
   res.send('KaizenFit API is running.');
