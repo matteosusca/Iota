@@ -1,0 +1,40 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id               String      @id @default(uuid()) @db.Uuid
+  createdAt        DateTime    @default(now()) @map("created_at")
+  pushSubscription Json?       @map("push_subscription")
+  streakCount      Int         @default(0) @map("streak_count")
+  routines         Routine[]
+  dailyLogs        DailyLog[]
+
+  @@map("users")
+}
+
+model Routine {
+  id        String @id @default(uuid()) @db.Uuid
+  userId    String @db.Uuid @map("user_id")
+  exercises Json
+  user      User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("routines")
+}
+
+model DailyLog {
+  id                   String   @id // Format: "{userId}_{logicalDate}"
+  userId               String   @db.Uuid @map("user_id")
+  logicalDate          DateTime @db.Date @map("logical_date")
+  status               String
+  completionPercentage Int      @map("completion_percentage")
+  exercisesSnapshot    Json     @map("exercises_snapshot")
+  user                 User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("daily_logs")
+}
