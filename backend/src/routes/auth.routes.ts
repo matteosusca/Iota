@@ -1,0 +1,44 @@
+import { FastifyInstance } from 'fastify';
+import { PrismaClient } from '@prisma/client';
+
+const prisma = new PrismaClient();
+
+export default async function authRoutes(fastify: FastifyInstance) {
+  fastify.post('/api/v1/auth/anonymous', async (request, reply) => {
+    const { deviceId } = request.body as { deviceId?: string };
+
+    if (!deviceId) {
+      return reply.status(400).send({ error: 'deviceId is required' });
+    }
+
+    try {
+      // Find or create the user securely based on deviceId mapping uniquely to User.id.
+      // Since deviceId is generated exactly as a UUID, we can use it as the user ID.
+      let user = await prisma.user.findUnique({
+        where: { id: deviceId }
+      });
+
+      if (!user) {
+        user = await prisma.user.create({
+          data: {
+            id: deviceId
+          }
+        });
+      }
+
+      const token = fastify.jwt.sign({ id: user.id }, { expiresIn: '1y' });
+
+      return {
+        token,
+        user: {
+          id: user.id,
+          createdAt: user.createdAt,
+          streakCount: user.streakCount
+        }
+      };
+    } catch (error) {
+      fastify.log.error(error);
+      return reply.status(500).send({ error: 'Internal Server Error' });
+    }
+  });
+}

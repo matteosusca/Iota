@@ -3,6 +3,11 @@ import cors from '@fastify/cors';
 import dotenv from 'dotenv';
 import { PrismaClient } from '@prisma/client';
 
+import authPlugin from './plugins/auth';
+import authRoutes from './routes/auth.routes';
+import routineRoutes from './routes/routine.routes';
+import logsRoutes from './routes/logs.routes';
+
 dotenv.config();
 
 const fastify = Fastify({
@@ -14,6 +19,14 @@ const prisma = new PrismaClient();
 fastify.register(cors, {
   origin: '*' // Configure properly in production
 });
+
+// Register Plugins
+fastify.register(authPlugin);
+
+// Register Routes
+fastify.register(authRoutes);
+fastify.register(routineRoutes);
+fastify.register(logsRoutes);
 
 fastify.get('/health', async (request, reply) => {
   try {

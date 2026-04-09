@@ -19,10 +19,11 @@ model User {
 }
 
 model Routine {
-  id        String @id @default(uuid()) @db.Uuid
-  userId    String @db.Uuid @map("user_id")
+  id        String   @id
+  userId    String   @db.Uuid @map("user_id")
   exercises Json
-  user      User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  updatedAt DateTime @updatedAt @map("updated_at")
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("routines")
 }
@@ -34,6 +35,7 @@ model DailyLog {
   status               String
   completionPercentage Int      @map("completion_percentage")
   exercisesSnapshot    Json     @map("exercises_snapshot")
+  lastUpdated          DateTime @updatedAt @map("last_updated")
   user                 User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("daily_logs")
