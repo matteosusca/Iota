@@ -19,7 +19,16 @@ Do not deviate from this strict separation of concerns:
 * Prefer `ref` over `reactive` for primitive values to avoid reactivity loss.
 * Always use TypeScript interfaces for Props.
 
-## 4. AI Agent Instructions (CRITICAL)
+## 5. Testing & TDD Strategy (NEW)
+*   **Vitest:** Use Vitest for all unit and store tests.
+*   **TDD Workflow:** Always follow a **Red-Green-Refactor** approach for new features or bug fixes.
+    1.  **Red:** Write a failing test case that defines the desired behavior.
+    2.  **Green:** Implement the minimal code necessary to make the test pass.
+    3.  **Refactor:** Clean up the implementation while ensuring tests remain green.
+*   **Coverage:** Aim for high coverage on core business logic (`services/`, `stores/`). UI components should be tested for critical interactions only.
+*   **Mocks:** Use `vi.mock()` for external dependencies (APIs, IndexedDB) to keep unit tests fast and isolated.
+
+## 6. AI Agent Instructions (CRITICAL)
 When reading this file, the AI agent must adhere to the following rules:
 1.  **Micro-Tasking:** Only execute the exact task requested in the user prompt. Do NOT proactively modify files or build features that were not explicitly asked for.
 2.  **Context Boundary:** Rely ONLY on the provided `.md` context files. Do not invent standard app features if they contradict KaizenFit's specific rules (e.g., do not add a "Login" screen).

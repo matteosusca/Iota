@@ -7,6 +7,9 @@ import authPlugin from './plugins/auth';
 import authRoutes from './routes/auth.routes';
 import routineRoutes from './routes/routine.routes';
 import logsRoutes from './routes/logs.routes';
+import configRoutes from './routes/config.routes';
+import notificationsRoutes from './routes/notifications.routes';
+import { notificationCron } from './services/notifications.cron';
 
 dotenv.config();
 
@@ -17,7 +20,8 @@ const fastify = Fastify({
 const prisma = new PrismaClient();
 
 fastify.register(cors, {
-  origin: '*' // Configure properly in production
+  origin: process.env.CORS_ORIGIN || '*', 
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS']
 });
 
 // Register Plugins
@@ -27,6 +31,11 @@ fastify.register(authPlugin);
 fastify.register(authRoutes);
 fastify.register(routineRoutes);
 fastify.register(logsRoutes);
+fastify.register(configRoutes);
+fastify.register(notificationsRoutes);
+
+// Initialize Cron Jobs
+notificationCron.init();
 
 fastify.get('/health', async (request, reply) => {
   try {

@@ -40,3 +40,10 @@ model DailyLog {
 
   @@map("daily_logs")
 }
+
+model SystemSetting {
+  key   String @id
+  value String
+
+  @@map("system_settings")
+}
