@@ -1,11 +1,21 @@
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 import type { ExerciseProgress } from '../types';
 
 const props = defineProps<{ exercise: ExerciseProgress }>();
 const emit = defineEmits<{ (e: 'update', id: string, delta: number): void }>();
 
 const isCompleted = computed(() => props.exercise.progress >= props.exercise.target);
+
+const isAnimating = ref(false);
+
+const handleIncrement = () => {
+  emit('update', props.exercise.id, 1);
+  isAnimating.value = true;
+  setTimeout(() => {
+    isAnimating.value = false;
+  }, 200);
+};
 </script>
 
 <template>
@@ -26,9 +36,12 @@ const isCompleted = computed(() => props.exercise.progress >= props.exercise.tar
               :disabled="exercise.progress <= 0">
         <span class="text-2xl font-bold leading-none">-</span>
       </button>
-      <button @click="emit('update', exercise.id, 1)" 
-              class="w-16 h-16 flex items-center justify-center rounded-xl bg-slate-800 hover:bg-slate-700 active:scale-95 transition-transform"
-              :class="isCompleted ? 'text-green-500' : 'text-white'">
+      <button @click="handleIncrement" 
+              class="w-16 h-16 flex items-center justify-center rounded-xl bg-slate-800 hover:bg-slate-700 active:scale-95 transition-all duration-200"
+              :class="[
+                isCompleted ? 'text-green-500' : 'text-white',
+                isAnimating ? 'scale-110 shadow-[0_0_15px_rgba(34,197,94,0.4)]' : 'scale-100'
+              ]">
         <span class="text-3xl font-bold leading-none">+</span>
       </button>
     </div>
