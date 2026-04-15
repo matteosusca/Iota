@@ -1,5 +1,6 @@
 import { FastifyInstance } from 'fastify';
 import { PrismaClient } from '@prisma/client';
+import { calculateUserStreak } from '../services/streak.service';
 
 const prisma = new PrismaClient();
 
@@ -77,7 +78,14 @@ export default async function logsRoutes(fastify: FastifyInstance) {
         }
       });
 
-      return { success: true };
+      // Recalculate and update user's cached streak
+      const streakCount = await calculateUserStreak(userId);
+      await prisma.user.update({
+        where: { id: userId },
+        data: { streakCount }
+      });
+
+      return { success: true, streakCount };
     } catch (error) {
       fastify.log.error(error);
       return reply.status(500).send({ error: 'Internal Server Error' });
