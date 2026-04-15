@@ -1,4 +1,4 @@
-FROM node:18-alpine AS builder
+FROM node:20-alpine AS builder
 
 WORKDIR /usr/src/app
 
@@ -12,7 +12,7 @@ COPY . .
 RUN npx prisma generate
 RUN npm run build
 
-FROM node:18-alpine
+FROM node:20-alpine
 
 WORKDIR /usr/src/app
 
@@ -28,5 +28,5 @@ COPY --from=builder /usr/src/app/dist ./dist
 
 EXPOSE 3000
 
-# Push DB schema before starting
-CMD ["sh", "-c", "npx prisma db push --accept-data-loss && npm start"]
+# Run migrations before starting
+CMD ["sh", "-c", "npx prisma migrate deploy && npm start"]

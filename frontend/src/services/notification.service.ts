@@ -36,7 +36,7 @@ class NotificationService {
       
       const subscription = await registration.pushManager.subscribe({
         userVisibleOnly: true,
-        applicationServerKey: this.urlBase64ToUint8Array(publicKey)
+        applicationServerKey: this.urlBase64ToUint8Array(publicKey) as any
       });
 
       await apiService.post('/api/v1/notifications/subscribe', {

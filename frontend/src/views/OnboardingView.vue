@@ -3,7 +3,7 @@ import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { useRoutineStore } from '../stores/routineStore';
 import { useAuthStore } from '../stores/authStore';
-import { ExerciseDefinition } from '../types';
+import type { ExerciseDefinition } from '../types';
 import { notificationService } from '../services/notification.service';
 
 const router = useRouter();
