@@ -15,7 +15,8 @@ const routineStore = useRoutineStore();
 const logStore = useLogStore();
 
 const isLoading = ref(true);
-const streakCount = ref(0);
+
+const streakCount = computed(() => authStore.streakCount);
 
 onMounted(async () => {
   if (!routineStore.activeRoutine) {
@@ -26,26 +27,15 @@ onMounted(async () => {
     await logStore.loadTodayLog(authStore.deviceId, routineStore.activeRoutine);
   }
   
-  // Load history to calculate streak
-  const dates: string[] = [];
-  const now = getNow();
-  for (let i = 0; i < 90; i++) { // Check up to 90 days back for streak
-    const d = new Date(now);
-    d.setDate(d.getDate() - i);
-    dates.push(getLogicalDate(d));
-  }
-  
-  const pastLogs = await dbService.getPastDays(authStore.deviceId, dates);
-  streakCount.value = calculateStreak(pastLogs);
+  // Authoritative background fetch
+  authStore.fetchProfile();
   
   isLoading.value = false;
 });
 
 const handleExerciseUpdate = async (id: string, delta: number) => {
   await logStore.updateExerciseProgress(id, delta);
-  // Re-calculate streak if completion percentage changes
-  // Actually, we should probably re-calculate it or update it optimistically
-  // For now, simple re-calc on each update is fast enough locally
+  // Re-calculate streak locally for optimistic update
   const dates: string[] = [];
   const now = getNow();
   for (let i = 0; i < 90; i++) {
@@ -54,7 +44,8 @@ const handleExerciseUpdate = async (id: string, delta: number) => {
     dates.push(getLogicalDate(d));
   }
   const pastLogs = await dbService.getPastDays(authStore.deviceId, dates);
-  streakCount.value = calculateStreak(pastLogs);
+  const newStreak = calculateStreak(pastLogs);
+  authStore.setStreakCount(newStreak);
 };
 
 const streakText = computed(() => {
