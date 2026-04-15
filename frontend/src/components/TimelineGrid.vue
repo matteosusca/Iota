@@ -3,7 +3,7 @@ import { ref, onMounted } from 'vue';
 import { dbService } from '../services/db.service';
 import type { DailyLog } from '../services/db.service';
 import { useAuthStore } from '../stores/authStore';
-import { getNow } from '../services/time.service';
+import { getNow, getLogicalDate } from '../services/time.service';
 
 const authStore = useAuthStore();
 const history = ref<{date: string, log?: DailyLog}[]>([]);
@@ -17,16 +17,12 @@ const getColorClass = (log?: DailyLog) => {
 
 onMounted(async () => {
    const now = getNow();
-   const logicalOffset = now.getHours() < 4 ? -1 : 0;
    
    const dates: string[] = [];
    for (let i = 27; i >= 0; i--) {
      const d = new Date(now);
-     d.setDate(d.getDate() + logicalOffset - i);
-     
-     // To keep consistent local timezone YYYY-MM-DD
-     const localStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-     dates.push(localStr);
+     d.setDate(d.getDate() - i);
+     dates.push(getLogicalDate(d));
    }
 
    const pastLogs = await dbService.getPastDays(authStore.deviceId, dates);
