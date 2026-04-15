@@ -41,4 +41,28 @@ export default async function authRoutes(fastify: FastifyInstance) {
       return reply.status(500).send({ error: 'Internal Server Error' });
     }
   });
+
+  fastify.get('/api/v1/auth/me', { preValidation: [fastify.authenticate] }, async (request, reply) => {
+    const userId = (request.user as any).id;
+
+    try {
+      const user = await prisma.user.findUnique({
+        where: { id: userId },
+        select: {
+          id: true,
+          createdAt: true,
+          streakCount: true
+        }
+      });
+
+      if (!user) {
+        return reply.status(404).send({ error: 'User not found' });
+      }
+
+      return user;
+    } catch (error) {
+      fastify.log.error(error);
+      return reply.status(500).send({ error: 'Internal Server Error' });
+    }
+  });
 }
