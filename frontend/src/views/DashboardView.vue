@@ -8,7 +8,7 @@ import { calculateStreak } from '../services/streak.service';
 import TimelineGrid from '../components/TimelineGrid.vue';
 import CounterCard from '../components/CounterCard.vue';
 import TimerCard from '../components/TimerCard.vue';
-import { getNow } from '../services/time.service';
+import { getNow, getLogicalDate } from '../services/time.service';
 
 const authStore = useAuthStore();
 const routineStore = useRoutineStore();
@@ -31,9 +31,8 @@ onMounted(async () => {
   const now = getNow();
   for (let i = 0; i < 90; i++) { // Check up to 90 days back for streak
     const d = new Date(now);
-    d.setHours(d.getHours() - 4); // Logical offset
     d.setDate(d.getDate() - i);
-    dates.push(d.toISOString().split('T')[0]);
+    dates.push(getLogicalDate(d));
   }
   
   const pastLogs = await dbService.getPastDays(authStore.deviceId, dates);
@@ -51,9 +50,8 @@ const handleExerciseUpdate = async (id: string, delta: number) => {
   const now = getNow();
   for (let i = 0; i < 90; i++) {
     const d = new Date(now);
-    d.setHours(d.getHours() - 4);
     d.setDate(d.getDate() - i);
-    dates.push(d.toISOString().split('T')[0]);
+    dates.push(getLogicalDate(d));
   }
   const pastLogs = await dbService.getPastDays(authStore.deviceId, dates);
   streakCount.value = calculateStreak(pastLogs);
