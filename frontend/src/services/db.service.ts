@@ -41,6 +41,7 @@ export interface SyncTask {
   payload: any;
   timestamp: string;
   retryCount: number;
+  nextRetryAt?: number;
 }
 
 interface KaizenFitDB extends DBSchema {
