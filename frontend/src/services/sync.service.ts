@@ -27,7 +27,8 @@ class SyncService {
         method,
         payload,
         timestamp: new Date().toISOString(),
-        retryCount: 0
+        retryCount: 0,
+        nextRetryAt: Date.now()
       };
       await dbService.enqueueSyncTask(task);
     }
@@ -39,7 +40,9 @@ class SyncService {
 
     this.isProcessing = true;
     try {
-      const tasks = await dbService.getAllSyncTasks();
+      const allTasks = await dbService.getAllSyncTasks();
+      // Only process tasks that are ready for retry
+      const tasks = allTasks.filter(t => !t.nextRetryAt || t.nextRetryAt <= Date.now());
       
       for (const task of tasks) {
         try {
@@ -56,7 +59,15 @@ class SyncService {
             console.error(`Dropping failed task ${task.id} due to 4xx code.`);
             await dbService.deleteSyncTask(task.id);
           } else {
-            console.warn('Network issue while processing queue, halting queue processing.');
+            // Exponential backoff logic
+            task.retryCount++;
+            const delay = Math.min(1000 * Math.pow(2, task.retryCount), 60000); // Backoff up to 60s
+            task.nextRetryAt = Date.now() + delay;
+            
+            console.warn(`Sync task ${task.id} failed (attempt ${task.retryCount}). Retrying in ${delay}ms.`);
+            await dbService.enqueueSyncTask(task);
+            
+            // Halt queue processing for this cycle to wait for backoff
             break; 
           }
         }
