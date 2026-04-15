@@ -7,6 +7,12 @@ export const useAuthStore = defineStore('auth', () => {
   const jwt = ref<string>('');
   const isAuthenticated = ref<boolean>(false);
   const isInitialized = ref<boolean>(false);
+  const streakCount = ref<number>(parseInt(localStorage.getItem('streakCount') || '0', 10));
+
+  function setStreakCount(count: number) {
+    streakCount.value = count;
+    localStorage.setItem('streakCount', count.toString());
+  }
 
   async function initAuth() {
     if (isInitialized.value) return;
@@ -29,6 +35,9 @@ export const useAuthStore = defineStore('auth', () => {
         
         storedJwt = response.token;
         localStorage.setItem('jwt', storedJwt);
+        if (response.user?.streakCount !== undefined) {
+          setStreakCount(response.user.streakCount);
+        }
       } catch (error) {
         console.error('Failed to initialize anonymous auth:', error);
       }
@@ -42,5 +51,17 @@ export const useAuthStore = defineStore('auth', () => {
     isInitialized.value = true;
   }
 
-  return { deviceId, jwt, isAuthenticated, isInitialized, initAuth };
+  async function fetchProfile() {
+    if (!isAuthenticated.value) return;
+    try {
+      const user = await apiService.get<{ streakCount: number }>('/api/v1/auth/me');
+      if (user && user.streakCount !== undefined) {
+        setStreakCount(user.streakCount);
+      }
+    } catch (error) {
+      console.error('Failed to fetch user profile:', error);
+    }
+  }
+
+  return { deviceId, jwt, isAuthenticated, isInitialized, initAuth, streakCount, setStreakCount, fetchProfile };
 });
