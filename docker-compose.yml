@@ -20,7 +20,7 @@ services:
     container_name: iota_backend
     environment:
       DATABASE_URL: postgresql://${DB_USER:-iota}:${DB_PASSWORD:-iotapassword}@db:5432/${DB_NAME:-iota}?schema=public
-      CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:80}
+      CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:8080}
       JWT_SECRET: ${JWT_SECRET:-supersafesecret123}
       PORT: 3000
     expose:
