@@ -1,4 +1,4 @@
-# 🎨 KaizenFit - UI/UX Design System & Page Routing
+# 🎨 Iota - UI/UX Design System & Page Routing
 
 ## 1. Core Design Rules
 * **Framework:** Tailwind CSS exclusively. Do NOT write custom `.css` files unless absolutely necessary.

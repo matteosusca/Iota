@@ -32,7 +32,7 @@ export default async function configRoutes(fastify: FastifyInstance) {
 
         // Set them in the webpush library permanently for this instance process
         webpush.setVapidDetails(
-          'mailto:support@kaizenfit.app',
+          'mailto:support@iota.app',
           vapidKeys.publicKey,
           vapidKeys.privateKey
         );

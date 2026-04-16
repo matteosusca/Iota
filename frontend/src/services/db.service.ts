@@ -44,7 +44,7 @@ export interface SyncTask {
   nextRetryAt?: number;
 }
 
-interface KaizenFitDB extends DBSchema {
+interface IotaDB extends DBSchema {
   routines: {
     key: string;
     value: UserRoutine;
@@ -59,11 +59,11 @@ interface KaizenFitDB extends DBSchema {
   };
 }
 
-let dbPromise: Promise<IDBPDatabase<KaizenFitDB>> | null = null;
+let dbPromise: Promise<IDBPDatabase<IotaDB>> | null = null;
 
 export async function getDB() {
   if (!dbPromise) {
-    dbPromise = openDB<KaizenFitDB>('kaizenfit-db', 2, {
+    dbPromise = openDB<IotaDB>('iota-db', 2, {
       upgrade(db) {
         if (!db.objectStoreNames.contains('routines')) {
           db.createObjectStore('routines', { keyPath: 'id' });

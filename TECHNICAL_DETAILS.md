@@ -1,4 +1,4 @@
-# ⚙️ KaizenFit - Technical Details & Implementation Constraints
+# ⚙️ Iota - Technical Details & Implementation Constraints
 
 ## 1. Environment Variables (.env)
 The agent must ensure that sensitive information is never hardcoded. 

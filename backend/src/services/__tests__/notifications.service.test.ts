@@ -60,7 +60,7 @@ describe('notifications.cron', () => {
     expect(mockFindMany).toHaveBeenCalled();
     expect(mockSendNotification).toHaveBeenCalledWith(
       mockUsers[0].pushSubscription,
-      expect.stringContaining('KaizenFit')
+      expect.stringContaining('Iota')
     );
   });
 

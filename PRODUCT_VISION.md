@@ -1,7 +1,7 @@
-# 🎯 KaizenFit - Product Vision & MVP Scope
+# 🎯 Iota - Product Vision & MVP Scope
 
 ## 1. Product Overview
-KaizenFit is a Progressive Web App (PWA) designed to help users build and maintain daily habits through Duolingo-style gamification, ultra-low friction micro-interactions, and targeted push notifications. 
+Iota is a Progressive Web App (PWA) designed to help users build and maintain daily habits through Duolingo-style gamification, ultra-low friction micro-interactions, and targeted push notifications. 
 The core psychological driver of the app is the **Streak** (a continuous chain of successful days). The system is designed to be forgiving for those who try, but ruthless to those who quit.
 
 ## 2. Core Philosophy: "Ultra-Low Friction"

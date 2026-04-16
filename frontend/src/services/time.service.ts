@@ -8,7 +8,7 @@
 import { ref, watch } from 'vue';
 
 // Global reactive offset to support DEV time travel
-const DEV_TIME_KEY = 'kaizen_dev_time_offset';
+const DEV_TIME_KEY = 'iota_dev_time_offset';
 const storedOffset = localStorage.getItem(DEV_TIME_KEY);
 
 export const devOffsetDays = ref(storedOffset ? parseInt(storedOffset) : 0);

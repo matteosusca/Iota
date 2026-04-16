@@ -1,7 +1,7 @@
-# 🏗️ KaizenFit - System Architecture & Tech Stack
+# 🏗️ Iota - System Architecture & Tech Stack
 
 ## 1. System Overview
-KaizenFit operates on a **Local-First, Optimistic Sync** architecture. The frontend acts as the primary source of truth for the user's immediate interactions, while a lightweight custom backend handles cross-device synchronization, data backup, and the push notification engine.
+Iota operates on a **Local-First, Optimistic Sync** architecture. The frontend acts as the primary source of truth for the user's immediate interactions, while a lightweight custom backend handles cross-device synchronization, data backup, and the push notification engine.
 
 ## 2. Frontend Stack
 * **Core Framework:** Vue 3 (using Composition API & `<script setup>`) + Vite.

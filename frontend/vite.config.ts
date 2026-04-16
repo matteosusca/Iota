@@ -11,8 +11,8 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'masked-icon.svg'],
       manifest: {
-        name: 'KaizenFit',
-        short_name: 'KaizenFit',
+        name: 'Iota',
+        short_name: 'Iota',
         description: 'A minimalist routine & exercise tracker focused on consistency.',
         theme_color: '#09090b',
         background_color: '#09090b',

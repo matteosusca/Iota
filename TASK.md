@@ -1,6 +1,6 @@
-# 🎯 KaizenFit - Project Task List & MVP Roadmap
+# 🎯 Iota - Project Task List & MVP Roadmap
 
-Based on the provided specification documents (`PRODUCT_VISION.md`, `UI_UX.md`, `ARCHITECTURE.md`, `DATA_MODELS.md`, `DEVELOPMENT.md`, `TECHNICAL_DETAILS.md`), this document outlines the step-by-step tasks required to build the KaizenFit MVP.
+Based on the provided specification documents (`PRODUCT_VISION.md`, `UI_UX.md`, `ARCHITECTURE.md`, `DATA_MODELS.md`, `DEVELOPMENT.md`, `TECHNICAL_DETAILS.md`), this document outlines the step-by-step tasks required to build the Iota MVP.
 
 ---
 

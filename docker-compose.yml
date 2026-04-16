@@ -3,11 +3,11 @@ version: '3.8'
 services:
   db:
     image: postgres:15-alpine
-    container_name: kaizenfit_db
+    container_name: iota_db
     environment:
-      POSTGRES_USER: ${DB_USER:-kaizen}
-      POSTGRES_PASSWORD: ${DB_PASSWORD:-kaizenpassword}
-      POSTGRES_DB: ${DB_NAME:-kaizenfit}
+      POSTGRES_USER: ${DB_USER:-iota}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-iotapassword}
+      POSTGRES_DB: ${DB_NAME:-iota}
     ports:
       - "5432:5432"
     volumes:
@@ -17,9 +17,9 @@ services:
   backend:
     build:
       context: ./backend
-    container_name: kaizenfit_backend
+    container_name: iota_backend
     environment:
-      DATABASE_URL: postgresql://${DB_USER:-kaizen}:${DB_PASSWORD:-kaizenpassword}@db:5432/${DB_NAME:-kaizenfit}?schema=public
+      DATABASE_URL: postgresql://${DB_USER:-iota}:${DB_PASSWORD:-iotapassword}@db:5432/${DB_NAME:-iota}?schema=public
       CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:80}
       JWT_SECRET: ${JWT_SECRET:-supersafesecret123}
       PORT: 3000
@@ -34,7 +34,7 @@ services:
       context: ./frontend
       args:
         VITE_API_URL: "" # Keep empty for relative Nginx proxying
-    container_name: kaizenfit_frontend
+    container_name: iota_frontend
     ports:
       - "${FRONTEND_PORT:-8080}:80"
     depends_on:

@@ -3,11 +3,11 @@ version: '3.8'
 services:
   db:
     image: postgres:15-alpine
-    container_name: kaizenfit_db_dev
+    container_name: iota_db_dev
     environment:
-      POSTGRES_USER: kaizen
-      POSTGRES_PASSWORD: kaizenpassword
-      POSTGRES_DB: kaizenfit
+      POSTGRES_USER: iota
+      POSTGRES_PASSWORD: iotapassword
+      POSTGRES_DB: iota
     ports:
       - "5432:5432"
     volumes:

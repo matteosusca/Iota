@@ -64,7 +64,7 @@ const handleExport = async () => {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `kaizenfit-backup-${new Date().toISOString().split('T')[0]}.json`;
+    a.download = `iota-backup-${new Date().toISOString().split('T')[0]}.json`;
     a.click();
     URL.revokeObjectURL(url);
   } catch (error) {

@@ -1,4 +1,4 @@
-# 🗄️ KaizenFit - Data Models & API Contracts
+# 🗄️ Iota - Data Models & API Contracts
 
 ## 1. Frontend Types (TypeScript / JSON)
 These are the exact structures to be used in the Pinia stores and `IndexedDB`. Do NOT add undocumented fields.

@@ -1,4 +1,4 @@
-# 💻 KaizenFit - Development Guidelines & AI Rules
+# 💻 Iota - Development Guidelines & AI Rules
 
 ## 1. Coding Principles
 * **KISS (Keep It Simple, Stupid):** Do not over-engineer. If a feature is not explicitly in `PRODUCT_VISION.md`, do not build it.
@@ -31,5 +31,5 @@ Do not deviate from this strict separation of concerns:
 ## 6. AI Agent Instructions (CRITICAL)
 When reading this file, the AI agent must adhere to the following rules:
 1.  **Micro-Tasking:** Only execute the exact task requested in the user prompt. Do NOT proactively modify files or build features that were not explicitly asked for.
-2.  **Context Boundary:** Rely ONLY on the provided `.md` context files. Do not invent standard app features if they contradict KaizenFit's specific rules (e.g., do not add a "Login" screen).
+2.  **Context Boundary:** Rely ONLY on the provided `.md` context files. Do not invent standard app features if they contradict Iota's specific rules (e.g., do not add a "Login" screen).
 3.  **No Placeholders:** Write complete, production-ready code for the specific component requested. Do not leave `// TODO: implement this later` unless instructed.

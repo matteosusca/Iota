@@ -35,7 +35,7 @@ class NotificationCron {
     }
     
     webpush.setVapidDetails(
-      'mailto:support@kaizenfit.app',
+      'mailto:support@iota.app',
       publicKeySetting.value,
       privateKeySetting.value
     );
@@ -72,7 +72,7 @@ class NotificationCron {
         if (user.pushSubscription) {
           try {
             const payload = JSON.stringify({
-              title: 'KaizenFit Reminder',
+              title: 'Iota Reminder',
               body: 'Don\'t break your streak! You are less than 50% through today\'s routine.',
               icon: '/icons/icon-192x192.png',
               badge: '/icons/badge-72x72.png',
