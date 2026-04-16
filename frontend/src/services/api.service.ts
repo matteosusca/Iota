@@ -37,8 +37,27 @@ class ApiService {
     return response.json();
   }
 
+  private async fetchWithTimeout(url: string, options: RequestInit = {}, timeout = 10000): Promise<Response> {
+    const controller = new AbortController();
+    const id = setTimeout(() => controller.abort(), timeout);
+    try {
+      const response = await fetch(url, {
+        ...options,
+        signal: controller.signal
+      });
+      clearTimeout(id);
+      return response;
+    } catch (error: any) {
+      clearTimeout(id);
+      if (error.name === 'AbortError') {
+        throw new Error('Request timed out');
+      }
+      throw error;
+    }
+  }
+
   async get<T>(endpoint: string): Promise<T> {
-    const response = await fetch(`${this.baseUrl}${endpoint}`, {
+    const response = await this.fetchWithTimeout(`${this.baseUrl}${endpoint}`, {
       method: 'GET',
       headers: this.getHeaders(),
     });
@@ -46,7 +65,7 @@ class ApiService {
   }
 
   async post<T>(endpoint: string, body: any): Promise<T> {
-    const response = await fetch(`${this.baseUrl}${endpoint}`, {
+    const response = await this.fetchWithTimeout(`${this.baseUrl}${endpoint}`, {
       method: 'POST',
       headers: this.getHeaders(),
       body: JSON.stringify(body),
@@ -55,7 +74,7 @@ class ApiService {
   }
 
   async put<T>(endpoint: string, body: any): Promise<T> {
-    const response = await fetch(`${this.baseUrl}${endpoint}`, {
+    const response = await this.fetchWithTimeout(`${this.baseUrl}${endpoint}`, {
       method: 'PUT',
       headers: this.getHeaders(),
       body: JSON.stringify(body),
@@ -64,7 +83,7 @@ class ApiService {
   }
 
   async delete<T>(endpoint: string): Promise<T> {
-    const response = await fetch(`${this.baseUrl}${endpoint}`, {
+    const response = await this.fetchWithTimeout(`${this.baseUrl}${endpoint}`, {
       method: 'DELETE',
       headers: this.getHeaders(),
     });

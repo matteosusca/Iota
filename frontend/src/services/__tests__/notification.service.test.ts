@@ -5,6 +5,7 @@ import { apiService } from '../api.service';
 vi.mock('../api.service', () => ({
   apiService: {
     post: vi.fn(),
+    get: vi.fn(),
   },
 }));
 
@@ -52,10 +53,14 @@ describe('notification.service', () => {
     const mockSubscription = { endpoint: 'https://push.com' };
     const mockServiceWorker = await (navigator.serviceWorker as any).ready;
     (mockServiceWorker.pushManager.subscribe as any).mockResolvedValue(mockSubscription);
+    
+    // Mock VAPID config response
+    (apiService.get as any).mockResolvedValue({ publicKey: 'mock-public-key' });
     (apiService.post as any).mockResolvedValue({ success: true });
 
     await notificationService.subscribeUser();
 
+    expect(apiService.get).toHaveBeenCalledWith('/api/v1/config/vapid');
     expect(mockServiceWorker.pushManager.subscribe).toHaveBeenCalledWith({
       userVisibleOnly: true,
       applicationServerKey: expect.any(Uint8Array),

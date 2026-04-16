@@ -61,11 +61,11 @@ describe('logStore', () => {
       ]
     };
 
-    // Update Pushups (+4 reps) -> 4/70 = 5%
+    // Update Pushups (+4 reps) -> 4/10 = 40% (avg with 0% of plank = 20%)
     await store.updateExerciseProgress('ex_1', 4);
 
     expect(store.currentLog.exercisesSnapshot[0].progress).toBe(4);
-    expect(store.currentLog.completionPercentage).toBe(5);
+    expect(store.currentLog.completionPercentage).toBe(20);
     expect(store.currentLog.status).toBe('failed');
   });
 
