@@ -27,28 +27,35 @@ export const useAuthStore = defineStore('auth', () => {
     
     deviceId.value = storedDeviceId;
 
-    if (!storedJwt) {
-      try {
-        const response = await apiService.post<{ token: string, user: any }>('/api/v1/auth/anonymous', {
-          deviceId: deviceId.value
-        });
-        
-        storedJwt = response.token;
-        localStorage.setItem('jwt', storedJwt);
-        if (response.user?.streakCount !== undefined) {
-          setStreakCount(response.user.streakCount);
-        }
-      } catch (error) {
-        console.error('Failed to initialize anonymous auth:', error);
-      }
-    }
-
+    // Fast-path: if we already have identity, mark as initialized immediately
     if (storedJwt) {
       jwt.value = storedJwt;
       isAuthenticated.value = true;
+      isInitialized.value = true;
+      // Background refresh profile (don't await)
+      fetchProfile();
+      return;
     }
 
-    isInitialized.value = true;
+    // No identity: must fetch anonymous token
+    try {
+      const response = await apiService.post<{ token: string, user: any }>('/api/v1/auth/anonymous', {
+        deviceId: deviceId.value
+      });
+      
+      storedJwt = response.token;
+      localStorage.setItem('jwt', storedJwt);
+      if (response.user?.streakCount !== undefined) {
+        setStreakCount(response.user.streakCount);
+      }
+
+      jwt.value = storedJwt;
+      isAuthenticated.value = true;
+    } catch (error) {
+      console.error('Failed to initialize anonymous auth:', error);
+    } finally {
+      isInitialized.value = true;
+    }
   }
 
   async function fetchProfile() {

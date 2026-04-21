@@ -7,9 +7,8 @@ export class ApiError extends Error {
 
 class ApiService {
   private get baseUrl(): string {
-    return import.meta.env.VITE_API_URL !== undefined 
-      ? import.meta.env.VITE_API_URL 
-      : 'http://localhost:3000';
+    // Default to relative path for Nginx proxying if VITE_API_URL is missing/empty
+    return import.meta.env.VITE_API_URL || '';
   }
 
   private getHeaders(): HeadersInit {
@@ -17,12 +16,31 @@ class ApiService {
       'Content-Type': 'application/json',
     };
     
-    // Inject JWT if present
     const token = localStorage.getItem('jwt');
     if (token) {
       headers['Authorization'] = `Bearer ${token}`;
     }
     return headers;
+  }
+
+  private async fetchWithTimeout(url: string, options: RequestInit, timeout = 5000): Promise<Response> {
+    const controller = new AbortController();
+    const id = setTimeout(() => controller.abort(), timeout);
+    
+    try {
+      const response = await fetch(url, {
+        ...options,
+        signal: controller.signal,
+      });
+      clearTimeout(id);
+      return response;
+    } catch (error: any) {
+      clearTimeout(id);
+      if (error.name === 'AbortError') {
+        throw new Error('Request timed out');
+      }
+      throw error;
+    }
   }
 
   private async handleResponse<T>(response: Response): Promise<T> {
@@ -38,7 +56,7 @@ class ApiService {
   }
 
   async get<T>(endpoint: string): Promise<T> {
-    const response = await fetch(`${this.baseUrl}${endpoint}`, {
+    const response = await this.fetchWithTimeout(`${this.baseUrl}${endpoint}`, {
       method: 'GET',
       headers: this.getHeaders(),
     });
@@ -46,7 +64,7 @@ class ApiService {
   }
 
   async post<T>(endpoint: string, body: any): Promise<T> {
-    const response = await fetch(`${this.baseUrl}${endpoint}`, {
+    const response = await this.fetchWithTimeout(`${this.baseUrl}${endpoint}`, {
       method: 'POST',
       headers: this.getHeaders(),
       body: JSON.stringify(body),
@@ -55,7 +73,7 @@ class ApiService {
   }
 
   async put<T>(endpoint: string, body: any): Promise<T> {
-    const response = await fetch(`${this.baseUrl}${endpoint}`, {
+    const response = await this.fetchWithTimeout(`${this.baseUrl}${endpoint}`, {
       method: 'PUT',
       headers: this.getHeaders(),
       body: JSON.stringify(body),
@@ -64,7 +82,7 @@ class ApiService {
   }
 
   async delete<T>(endpoint: string): Promise<T> {
-    const response = await fetch(`${this.baseUrl}${endpoint}`, {
+    const response = await this.fetchWithTimeout(`${this.baseUrl}${endpoint}`, {
       method: 'DELETE',
       headers: this.getHeaders(),
     });

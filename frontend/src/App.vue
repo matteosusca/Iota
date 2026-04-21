@@ -17,7 +17,8 @@ const handleOnline = () => {
 onMounted(async () => {
   // Initialization also happens in router guards, catching here just in case.
   await authStore.initAuth();
-  await syncService.processOfflineQueue();
+  // Process offline queue in background
+  syncService.processOfflineQueue();
   window.addEventListener('online', handleOnline);
 });
 
