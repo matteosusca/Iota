@@ -34,25 +34,22 @@ fastify.register(logsRoutes);
 fastify.register(configRoutes);
 fastify.register(notificationsRoutes);
 
-// Initialize Cron Jobs
-notificationCron.init();
-
-fastify.get('/health', async (request, reply) => {
-  try {
-    // Just verifying database connectivity
-    await prisma.$queryRaw`SELECT 1`;
-    return { status: 'ok', database: 'connected' };
-  } catch (error) {
-    fastify.log.error(error);
-    return reply.status(500).send({ status: 'error', database: 'disconnected' });
-  }
-});
-
 const start = async () => {
   try {
     const port = Number(process.env.PORT) || 3000;
     await fastify.listen({ port, host: '0.0.0.0' });
     console.log(`Server is running on http://localhost:${port}`);
+    
+    // Initialize Cron Jobs after server is up and database migrations are likely done
+    // Wrapping in a small timeout to ensure migrations are fully settled
+    setTimeout(async () => {
+      try {
+        await notificationCron.init();
+      } catch (err) {
+        console.error('Failed to initialize cron jobs:', err);
+      }
+    }, 5000);
+    
   } catch (err) {
     fastify.log.error(err);
     process.exit(1);
