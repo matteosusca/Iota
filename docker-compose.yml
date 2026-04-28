@@ -8,8 +8,6 @@ services:
       POSTGRES_USER: ${DB_USER:-iota}
       POSTGRES_PASSWORD: ${DB_PASSWORD:-iotapassword}
       POSTGRES_DB: ${DB_NAME:-iota}
-    ports:
-      - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     restart: unless-stopped
