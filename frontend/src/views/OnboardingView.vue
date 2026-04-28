@@ -5,10 +5,13 @@ import { useRoutineStore } from '../stores/routineStore';
 import { useAuthStore } from '../stores/authStore';
 import type { ExerciseDefinition } from '../types';
 import { notificationService } from '../services/notification.service';
+import LoadingView from '../components/LoadingView.vue';
 
 const router = useRouter();
 const routineStore = useRoutineStore();
 const authStore = useAuthStore();
+
+const isSubmitting = ref(false);
 
 const exercises = ref<Partial<ExerciseDefinition>[]>([
   { id: crypto.randomUUID(), name: '', type: 'counter', target: 10, order: 1 }
@@ -37,6 +40,8 @@ const startStreak = async () => {
     alert('Please enter at least one exercise to start.');
     return;
   }
+
+  isSubmitting.value = true;
 
   const finalExercises: ExerciseDefinition[] = validExercises.map((ex, idx) => ({
     id: ex.id!,
@@ -68,6 +73,10 @@ const startStreak = async () => {
 
 <template>
   <div class="flex flex-col items-center justify-center min-h-[80vh] px-6 py-12 max-w-md mx-auto">
+    <Transition name="fade">
+      <LoadingView v-if="isSubmitting" message="Building your routine..." />
+    </Transition>
+
     <h1 class="text-3xl font-light mb-8 tracking-wide text-center">Don't break the chain.</h1>
     
     <div class="w-full space-y-6">

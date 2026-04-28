@@ -1,23 +1,31 @@
 <script setup lang="ts">
-import { onMounted, onUnmounted } from 'vue';
+import { onMounted, onUnmounted, ref } from 'vue';
 import { useAuthStore } from './stores/authStore';
 import { syncService } from './services/sync.service';
 import { useRoute } from 'vue-router';
 import { devOffsetDays, getLogicalDate } from './services/time.service';
+import LoadingView from './components/LoadingView.vue';
 
 const isDev = import.meta.env.DEV;
 
 const authStore = useAuthStore();
 const route = useRoute();
 
+const isAppLoading = ref(true);
+
 const handleOnline = () => {
   syncService.processOfflineQueue();
 };
 
 onMounted(async () => {
-  // Initialization also happens in router guards, catching here just in case.
-  await authStore.initAuth();
+  // Wait for auth initialization (might be triggered by router guard)
+  if (!authStore.isInitialized) {
+    await authStore.initAuth();
+  }
+  
   await syncService.processOfflineQueue();
+  
+  isAppLoading.value = false;
   window.addEventListener('online', handleOnline);
 });
 
@@ -33,6 +41,11 @@ const offsetTime = (days: number) => {
 
 <template>
   <div class="min-h-screen bg-slate-950 text-slate-100 font-sans flex flex-col">
+    <!-- Initial App Loading -->
+    <Transition name="fade">
+      <LoadingView v-if="isAppLoading" />
+    </Transition>
+
     <!-- Main Content Area -->
     <main class="flex-grow pb-24 relative">
       <router-view />

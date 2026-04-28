@@ -8,6 +8,7 @@ import { calculateStreak } from '../services/streak.service';
 import TimelineGrid from '../components/TimelineGrid.vue';
 import CounterCard from '../components/CounterCard.vue';
 import TimerCard from '../components/TimerCard.vue';
+import LoadingView from '../components/LoadingView.vue';
 import { getNow, getLogicalDate } from '../services/time.service';
 
 const authStore = useAuthStore();
@@ -111,7 +112,5 @@ const streakLabel = computed(() => {
       </div>
     </section>
   </div>
-  <div v-else class="flex justify-center items-center py-20 text-slate-500">
-    Loading...
-  </div>
+  <LoadingView v-else />
 </template>
