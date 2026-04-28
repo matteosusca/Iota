@@ -12,19 +12,12 @@ export default async function authRoutes(fastify: FastifyInstance) {
     }
 
     try {
-      // Find or create the user securely based on deviceId mapping uniquely to User.id.
-      // Since deviceId is generated exactly as a UUID, we can use it as the user ID.
-      let user = await prisma.user.findUnique({
-        where: { id: deviceId }
+      // Use upsert to atomically find or create the user, preventing race conditions
+      const user = await prisma.user.upsert({
+        where: { id: deviceId },
+        update: {}, // No updates needed if user exists
+        create: { id: deviceId }
       });
-
-      if (!user) {
-        user = await prisma.user.create({
-          data: {
-            id: deviceId
-          }
-        });
-      }
 
       const token = fastify.jwt.sign({ id: user.id }, { expiresIn: '1y' });
 
