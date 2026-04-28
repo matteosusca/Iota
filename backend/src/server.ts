@@ -35,7 +35,9 @@ fastify.register(configRoutes);
 fastify.register(notificationsRoutes);
 
 // Initialize Cron Jobs
-notificationCron.init();
+notificationCron.init().catch(err => {
+  fastify.log.error('Failed to initialize notification cron:', err);
+});
 
 fastify.get('/health', async (request, reply) => {
   try {
