@@ -3,7 +3,6 @@ version: '3.8'
 services:
   db:
     image: postgres:15-alpine
-    container_name: iota_db_dev
     environment:
       POSTGRES_USER: iota
       POSTGRES_PASSWORD: iotapassword
