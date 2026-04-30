@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia';
 import { ref } from 'vue';
 import { apiService } from '../services/api.service';
+import { syncService } from '../services/sync.service';
 
 export const useAuthStore = defineStore('auth', () => {
   const deviceId = ref<string>('');
@@ -46,6 +47,11 @@ export const useAuthStore = defineStore('auth', () => {
     if (storedJwt) {
       jwt.value = storedJwt;
       isAuthenticated.value = true;
+      
+      // Pull latest data from backend as part of initialization
+      // This ensures manual DB updates are picked up before router guards check for routines.
+      await syncService.fullSyncDown();
+      await fetchProfile();
     }
 
     isInitialized.value = true;

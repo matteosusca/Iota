@@ -87,4 +87,50 @@ describe('sync.service', () => {
     expect(apiService.put).toHaveBeenCalled();
     expect(dbService.deleteSyncTask).not.toHaveBeenCalled();
   });
+
+  describe('fullSyncDown', () => {
+    it('should fetch routine and logs and update dbService', async () => {
+      const mockRoutine = { id: 'r1', updatedAt: '2023-01-01T00:00:00Z', exercises: [] };
+      const mockLogs = { logs: [{ id: 'l1', logicalDate: '2023-01-01', lastUpdated: '2023-01-01T00:00:00Z' }] };
+
+      (apiService.get as any) = vi.fn().mockImplementation((url: string) => {
+        if (url.includes('/routine')) return Promise.resolve(mockRoutine);
+        if (url.includes('/logs')) return Promise.resolve(mockLogs);
+        return Promise.reject(new Error('Unknown URL'));
+      });
+
+      (dbService.getRoutine as any) = vi.fn().mockResolvedValue(null);
+      (dbService.getDailyLog as any) = vi.fn().mockResolvedValue(null);
+      (dbService.putRoutine as any) = vi.fn().mockResolvedValue(undefined);
+      (dbService.putDailyLog as any) = vi.fn().mockResolvedValue(undefined);
+
+      await syncService.fullSyncDown();
+
+      expect(apiService.get).toHaveBeenCalledWith('/api/v1/routine');
+      expect(apiService.get).toHaveBeenCalledWith(expect.stringContaining('/api/v1/logs'));
+      expect(dbService.putRoutine).toHaveBeenCalledWith(mockRoutine);
+      expect(dbService.putDailyLog).toHaveBeenCalledWith(mockLogs.logs[0]);
+    });
+
+    it('should only update if backend data is newer (LWW)', async () => {
+      const staleBackendRoutine = { id: 'r1', updatedAt: '2023-01-01T00:00:00Z', exercises: [] };
+      const freshLocalRoutine = { id: 'r1', updatedAt: '2023-01-02T00:00:00Z', exercises: [] };
+
+      (apiService.get as any) = vi.fn().mockResolvedValue(staleBackendRoutine);
+      (dbService.getRoutine as any) = vi.fn().mockResolvedValue(freshLocalRoutine);
+      (dbService.putRoutine as any) = vi.fn().mockResolvedValue(undefined);
+
+      // We only test routine for brevity in this case
+      // Need to mock logs call too to avoid error
+      (apiService.get as any).mockImplementation((url: string) => {
+        if (url.includes('/routine')) return Promise.resolve(staleBackendRoutine);
+        if (url.includes('/logs')) return Promise.resolve({ logs: [] });
+        return Promise.reject(new Error('Unknown URL'));
+      });
+
+      await syncService.fullSyncDown();
+
+      expect(dbService.putRoutine).not.toHaveBeenCalled();
+    });
+  });
 });

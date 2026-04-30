@@ -76,6 +76,43 @@ class SyncService {
       this.isProcessing = false;
     }
   }
+
+  async fullSyncDown(): Promise<void> {
+    if (!navigator.onLine) return;
+
+    try {
+      // 1. Sync Routine
+      const backendRoutine = await apiService.get<any>('/api/v1/routine');
+      if (backendRoutine) {
+        const localRoutine = await dbService.getRoutine(backendRoutine.id);
+        const backendDate = new Date(backendRoutine.updatedAt).getTime();
+        const localDate = localRoutine ? new Date(localRoutine.updatedAt).getTime() : 0;
+
+        if (!localRoutine || backendDate > localDate) {
+          await dbService.putRoutine(backendRoutine);
+        }
+      }
+
+      // 2. Sync Logs (Last 90 days to match streak calculation)
+      const startDate = new Date();
+      startDate.setDate(startDate.getDate() - 90);
+      const startDateStr = startDate.toISOString().split('T')[0];
+      
+      const { logs } = await apiService.get<{ logs: any[] }>(`/api/v1/logs?startDate=${startDateStr}`);
+      
+      for (const backendLog of logs) {
+        const localLog = await dbService.getDailyLog(backendLog.id);
+        const backendDate = new Date(backendLog.lastUpdated).getTime();
+        const localDate = localLog ? new Date(localLog.lastUpdated).getTime() : 0;
+
+        if (!localLog || backendDate > localDate) {
+          await dbService.putDailyLog(backendLog);
+        }
+      }
+    } catch (error) {
+      console.error('Failed to sync down from backend:', error);
+    }
+  }
 }
 
 export const syncService = new SyncService();

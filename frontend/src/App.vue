@@ -18,11 +18,12 @@ const handleOnline = () => {
 };
 
 onMounted(async () => {
-  // Wait for auth initialization (might be triggered by router guard)
+  // Wait for auth initialization (which now includes full sync down)
   if (!authStore.isInitialized) {
     await authStore.initAuth();
   }
   
+  // Just process any pending offline tasks
   await syncService.processOfflineQueue();
   
   isAppLoading.value = false;
