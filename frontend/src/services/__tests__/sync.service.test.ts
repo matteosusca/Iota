@@ -89,7 +89,7 @@ describe('sync.service', () => {
   });
 
   describe('fullSyncDown', () => {
-    it('should fetch routine and logs and update dbService', async () => {
+    it('should fetch routine and logs and update dbService and return true if updated', async () => {
       const mockRoutine = { id: 'r1', updatedAt: '2023-01-01T00:00:00Z', exercises: [] };
       const mockLogs = { logs: [{ id: 'l1', logicalDate: '2023-01-01', lastUpdated: '2023-01-01T00:00:00Z' }] };
 
@@ -104,12 +104,51 @@ describe('sync.service', () => {
       (dbService.putRoutine as any) = vi.fn().mockResolvedValue(undefined);
       (dbService.putDailyLog as any) = vi.fn().mockResolvedValue(undefined);
 
-      await syncService.fullSyncDown();
+      const result = await syncService.fullSyncDown();
 
       expect(apiService.get).toHaveBeenCalledWith('/api/v1/routine');
       expect(apiService.get).toHaveBeenCalledWith(expect.stringContaining('/api/v1/logs'));
       expect(dbService.putRoutine).toHaveBeenCalledWith(mockRoutine);
       expect(dbService.putDailyLog).toHaveBeenCalledWith(mockLogs.logs[0]);
+      expect(result).toEqual({ routineUpdated: true, logsUpdated: true });
+    });
+
+    it('should use 7-day range by default if recently synced', async () => {
+      const mockLogs = { logs: [] };
+      (apiService.get as any) = vi.fn().mockResolvedValue(mockLogs);
+      
+      // Simulate recent sync
+      localStorage.setItem('lastFullSyncDown', (Date.now() - 1000).toString());
+
+      await syncService.fullSyncDown();
+
+      const logsCall = (apiService.get as any).mock.calls.find((call: any) => call[0].includes('/logs'));
+      const url = logsCall[0];
+      const startDateStr = url.split('startDate=')[1].split('&')[0];
+      
+      const expectedDate = new Date();
+      expectedDate.setDate(expectedDate.getDate() - 7);
+      const expectedStr = expectedDate.toISOString().split('T')[0];
+
+      expect(startDateStr).toBe(expectedStr);
+    });
+
+    it('should use 90-day range if never synced before', async () => {
+      localStorage.removeItem('lastFullSyncDown');
+      const mockLogs = { logs: [] };
+      (apiService.get as any) = vi.fn().mockResolvedValue(mockLogs);
+
+      await syncService.fullSyncDown();
+
+      const logsCall = (apiService.get as any).mock.calls.find((call: any) => call[0].includes('/logs'));
+      const url = logsCall[0];
+      const startDateStr = url.split('startDate=')[1].split('&')[0];
+      
+      const expectedDate = new Date();
+      expectedDate.setDate(expectedDate.getDate() - 90);
+      const expectedStr = expectedDate.toISOString().split('T')[0];
+
+      expect(startDateStr).toBe(expectedStr);
     });
 
     it('should only update if backend data is newer (LWW)', async () => {

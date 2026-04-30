@@ -16,7 +16,7 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   async function initAuth() {
-    if (isInitialized.value) return;
+    if (isInitialized.value) return { routineUpdated: false, logsUpdated: false };
 
     let storedDeviceId = localStorage.getItem('deviceId');
     let storedJwt = localStorage.getItem('jwt');
@@ -27,6 +27,7 @@ export const useAuthStore = defineStore('auth', () => {
     }
     
     deviceId.value = storedDeviceId;
+    let syncResult = { routineUpdated: false, logsUpdated: false };
 
     if (!storedJwt) {
       try {
@@ -50,11 +51,12 @@ export const useAuthStore = defineStore('auth', () => {
       
       // Pull latest data from backend as part of initialization
       // This ensures manual DB updates are picked up before router guards check for routines.
-      await syncService.fullSyncDown();
+      syncResult = await syncService.fullSyncDown();
       await fetchProfile();
     }
 
     isInitialized.value = true;
+    return syncResult;
   }
 
   async function fetchProfile() {

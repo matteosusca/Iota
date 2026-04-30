@@ -41,10 +41,10 @@ router.beforeEach(async (to, from) => {
   const authStore = useAuthStore();
   
   if (!authStore.isInitialized) {
-      await authStore.initAuth();
-      // After sync is complete, force reload local state from DB 
-      // to ensure manual SQL updates are reflected in UI stores.
-      if (authStore.isAuthenticated) {
+      const { routineUpdated, logsUpdated } = await authStore.initAuth();
+      // Only force reload from DB if the sync actually changed something
+      // to avoid redundant disk I/O on every app start.
+      if (authStore.isAuthenticated && (routineUpdated || logsUpdated)) {
         await routineStore.loadRoutine(authStore.deviceId);
         if (routineStore.activeRoutine) {
           await logStore.loadTodayLog(authStore.deviceId, routineStore.activeRoutine);

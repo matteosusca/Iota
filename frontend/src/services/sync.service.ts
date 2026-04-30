@@ -77,9 +77,10 @@ class SyncService {
     }
   }
 
-  async fullSyncDown(): Promise<{ routineUpdated: boolean }> {
-    if (!navigator.onLine) return { routineUpdated: false };
+  async fullSyncDown(): Promise<{ routineUpdated: boolean, logsUpdated: boolean }> {
+    if (!navigator.onLine) return { routineUpdated: false, logsUpdated: false };
     let routineUpdated = false;
+    let logsUpdated = false;
 
     try {
       // 1. Sync Routine
@@ -96,9 +97,12 @@ class SyncService {
         }
       }
 
-      // 2. Sync Logs (Last 90 days to match streak calculation)
+      // 2. Sync Logs (Last 90 days if first time, else last 7 days)
+      const lastSync = localStorage.getItem('lastFullSyncDown');
+      const daysToSync = lastSync ? 7 : 90;
+      
       const startDate = new Date();
-      startDate.setDate(startDate.getDate() - 90);
+      startDate.setDate(startDate.getDate() - daysToSync);
       const startDateStr = startDate.toISOString().split('T')[0];
       
       const { logs } = await apiService.get<{ logs: any[] }>(`/api/v1/logs?startDate=${startDateStr}`);
@@ -110,13 +114,16 @@ class SyncService {
 
         if (!localLog || backendDate >= localDate) {
           await dbService.putDailyLog(backendLog);
+          logsUpdated = true;
         }
       }
+
+      localStorage.setItem('lastFullSyncDown', Date.now().toString());
     } catch (error) {
       console.error('Failed to sync down from backend:', error);
     }
     
-    return { routineUpdated };
+    return { routineUpdated, logsUpdated };
   }
 }
 
