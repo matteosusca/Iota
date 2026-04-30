@@ -37,10 +37,19 @@ const router = createRouter({
 
 router.beforeEach(async (to, from) => {
   const routineStore = useRoutineStore();
+  const logStore = useLogStore();
   const authStore = useAuthStore();
   
   if (!authStore.isInitialized) {
       await authStore.initAuth();
+      // After sync is complete, force reload local state from DB 
+      // to ensure manual SQL updates are reflected in UI stores.
+      if (authStore.isAuthenticated) {
+        await routineStore.loadRoutine(authStore.deviceId);
+        if (routineStore.activeRoutine) {
+          await logStore.loadTodayLog(authStore.deviceId, routineStore.activeRoutine);
+        }
+      }
   }
 
   if (!routineStore.activeRoutine) {

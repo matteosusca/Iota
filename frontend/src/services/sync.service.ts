@@ -77,8 +77,9 @@ class SyncService {
     }
   }
 
-  async fullSyncDown(): Promise<void> {
-    if (!navigator.onLine) return;
+  async fullSyncDown(): Promise<{ routineUpdated: boolean }> {
+    if (!navigator.onLine) return { routineUpdated: false };
+    let routineUpdated = false;
 
     try {
       // 1. Sync Routine
@@ -88,8 +89,10 @@ class SyncService {
         const backendDate = new Date(backendRoutine.updatedAt).getTime();
         const localDate = localRoutine ? new Date(localRoutine.updatedAt).getTime() : 0;
 
-        if (!localRoutine || backendDate > localDate) {
+        // Use >= to ensure server-side manual updates (SQL) with close timestamps win
+        if (!localRoutine || backendDate >= localDate) {
           await dbService.putRoutine(backendRoutine);
+          routineUpdated = true;
         }
       }
 
@@ -105,13 +108,15 @@ class SyncService {
         const backendDate = new Date(backendLog.lastUpdated).getTime();
         const localDate = localLog ? new Date(localLog.lastUpdated).getTime() : 0;
 
-        if (!localLog || backendDate > localDate) {
+        if (!localLog || backendDate >= localDate) {
           await dbService.putDailyLog(backendLog);
         }
       }
     } catch (error) {
       console.error('Failed to sync down from backend:', error);
     }
+    
+    return { routineUpdated };
   }
 }
 
